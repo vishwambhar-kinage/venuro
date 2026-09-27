@@ -1,0 +1,352 @@
+{
+  "info": {
+    "_postman_id": "venuro-flagship-api-v2",
+    "name": "Venuro 🎟️ — Flagship API Collection",
+    "description": "Complete production API test collection for Venuro: AI-Powered Entertainment Discovery & High-Concurrency Reservation Platform.\n\nTech Stack: React, Node.js, Express, MongoDB, Redis Concurrency Locking, JWT RBAC, Google Gemini 1.5 Flash RAG, HMAC-SHA256 QR passes, Razorpay.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Authentication & RBAC",
+      "item": [
+        {
+          "name": "Login - Normal User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('User role is user', function () { pm.expect(jsonData.user.role).to.eql('user'); });",
+                  "if (jsonData.token) { pm.environment.set('userToken', jsonData.token); pm.environment.set('authToken', jsonData.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@venuro.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Platform Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Admin role is admin', function () { pm.expect(jsonData.user.role).to.eql('admin'); });",
+                  "if (jsonData.token) { pm.environment.set('adminToken', jsonData.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@venuro.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Event Coordinator",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Coordinator role is coordinator', function () { pm.expect(jsonData.user.role).to.eql('coordinator'); });",
+                  "if (jsonData.token) { pm.environment.set('coordToken', jsonData.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"coordinator@venuro.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current Authenticated User (Profile)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"] }
+          }
+        },
+        {
+          "name": "Register User (Generates 6-Digit OTP)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Interview Demo Candidate\",\n  \"email\": \"candidate@venuro.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Event Catalog & Discovery",
+      "item": [
+        {
+          "name": "Get All Events (Catalog)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/events", "host": ["{{baseUrl}}"], "path": ["api", "events"] }
+          }
+        },
+        {
+          "name": "Filter Events by Category (Concerts)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/events?category=concerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events"],
+              "query": [{ "key": "category", "value": "concerts" }]
+            }
+          }
+        },
+        {
+          "name": "Search Events (Keyword Search)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/events?search=coldplay",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events"],
+              "query": [{ "key": "search", "value": "coldplay" }]
+            }
+          }
+        },
+        {
+          "name": "Get Event Details & Shows by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/events/evt_dune2", "host": ["{{baseUrl}}"], "path": ["api", "events", "evt_dune2"] }
+          }
+        },
+        {
+          "name": "Get Interactive Seat Map by Show ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/shows/shw_dune2_1/seat-map", "host": ["{{baseUrl}}"], "path": ["api", "shows", "shw_dune2_1", "seat-map"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Concurrency Control & Seat Locking (Redis)",
+      "item": [
+        {
+          "name": "Acquire Atomic Seat Locks (SET NX EX 300)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 409', function () { pm.expect([200, 409]).to.include(pm.response.code); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"showId\": \"shw_dune2_1\",\n  \"seatIds\": [\"C5\", \"C6\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/bookings/lock-seats", "host": ["{{baseUrl}}"], "path": ["api", "bookings", "lock-seats"] }
+          }
+        },
+        {
+          "name": "Release Seat Locks Manually",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"showId\": \"shw_dune2_1\",\n  \"seatIds\": [\"C5\", \"C6\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/bookings/release-seats", "host": ["{{baseUrl}}"], "path": ["api", "bookings", "release-seats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Booking Checkout & Digital Passes",
+      "item": [
+        {
+          "name": "Checkout Booking (Generates Signed QR Pass)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"showId\": \"shw_dune2_1\",\n  \"seatIds\": [\"C5\", \"C6\"],\n  \"paymentMethod\": \"UPI\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/bookings/checkout", "host": ["{{baseUrl}}"], "path": ["api", "bookings", "checkout"] }
+          }
+        },
+        {
+          "name": "Get My Bookings (Active & Cancelled)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/bookings/my-bookings", "host": ["{{baseUrl}}"], "path": ["api", "bookings", "my-bookings"] }
+          }
+        },
+        {
+          "name": "Cancel Booking & Process Refund",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Schedule conflict\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/bookings/bkg_demo_dune/cancel", "host": ["{{baseUrl}}"], "path": ["api", "bookings", "bkg_demo_dune", "cancel"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. AI Assistant & Semantic Vector Search",
+      "item": [
+        {
+          "name": "AI Assistant Chat (RAG Augmented)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"What live stadium concerts are happening in Mumbai and what are your refund rules?\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/ai/chat", "host": ["{{baseUrl}}"], "path": ["api", "ai", "chat"] }
+          }
+        },
+        {
+          "name": "Vector Semantic Search (Cosine Similarity Scoring)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ai/semantic-search?q=rock music concert with stadium atmosphere",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ai", "semantic-search"],
+              "query": [{ "key": "q", "value": "rock music concert with stadium atmosphere" }]
+            }
+          }
+        },
+        {
+          "name": "Get AI Recommendations",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/ai/recommendations", "host": ["{{baseUrl}}"], "path": ["api", "ai", "recommendations"] }
+          }
+        },
+        {
+          "name": "Get AI Engine Telemetry & Vector Status",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/ai/status", "host": ["{{baseUrl}}"], "path": ["api", "ai", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Platform Admin Telemetry & Analytics",
+      "item": [
+        {
+          "name": "Get Platform Analytics & GMV Metrics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/analytics", "host": ["{{baseUrl}}"], "path": ["api", "admin", "analytics"] }
+          }
+        },
+        {
+          "name": "Get All Users List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/users", "host": ["{{baseUrl}}"], "path": ["api", "admin", "users"] }
+          }
+        },
+        {
+          "name": "Get System Health & Engine Monitor",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/health", "host": ["{{baseUrl}}"], "path": ["api", "admin", "health"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Coordinator Tools & QR Verification",
+      "item": [
+        {
+          "name": "Get Coordinator Managed Events",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{coordToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/events/coordinator/my-events", "host": ["{{baseUrl}}"], "path": ["api", "events", "coordinator", "my-events"] }
+          }
+        },
+        {
+          "name": "Verify Digital Ticket QR Scan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{coordToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"bkg_demo_coldplay\",\n  \"bookingNumber\": \"VNR-COLD-2026-99\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/bookings/verify-qr", "host": ["{{baseUrl}}"], "path": ["api", "bookings", "verify-qr"] }
+          }
+        }
+      ]
+    }
+  ]
+}
