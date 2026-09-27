@@ -1,4 +1,4 @@
-import { test, describe, before } from 'node:test';
+import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert';
 import jwt from 'jsonwebtoken';
 import { seedInitialData } from '../src/utils/seedData.js';
@@ -118,5 +118,9 @@ describe('🎟️ Venuro Flagship Test Suite', () => {
       assert.ok(aiResponse.matchedEvents.length >= 0);
       assert.ok(typeof aiResponse.answer === 'string');
     });
+  });
+
+  after(() => {
+    setTimeout(() => process.exit(0), 100).unref();
   });
 });
