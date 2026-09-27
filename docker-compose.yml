@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # Client Service (React 18 + Vite + Nginx)
+  # ==========================================
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: venuro_client
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - server
+    networks:
+      - venuro_network
+    restart: unless-stopped
+
+  # ==========================================
+  # Server Service (Node.js + Express + Socket.io)
+  # ==========================================
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: venuro_server
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/venuro_db
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=venuro-jwt-ultra-secure-key-2026
+      - QR_SECRET=venuro-super-secret-qr-key-2026
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - venuro_network
+    restart: unless-stopped
+
+  # ==========================================
+  # Redis Service (Seat Locking & Concurrency)
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    container_name: venuro_redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - venuro_network
+    restart: unless-stopped
+
+  # ==========================================
+  # MongoDB Service (Document Store & Vector Index)
+  # ==========================================
+  mongodb:
+    image: mongo:7.0
+    container_name: venuro_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - venuro_network
+    restart: unless-stopped
+
+networks:
+  venuro_network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  redis_data:
