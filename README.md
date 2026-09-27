@@ -1,61 +1,53 @@
-# 🎟️ Venuro — AI-Powered Entertainment Discovery & Booking Platform
+# 🎟️ Venuro — Entertainment Discovery & Real-Time Event Booking Platform
 
-[![CI/CD](https://github.com/venuro/venuro/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/venuro/venuro/actions)
-[![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
-[![Redis](https://img.shields.io/badge/Redis-7-red.svg)](https://redis.io/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas%20Vector-emerald.svg)](https://mongodb.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://docker.com/)
-[![AWS](https://img.shields.io/badge/AWS-ECS%20Fargate-FF9900.svg)](https://aws.amazon.com/)
+[![CI/CD Pipeline](https://github.com/vishwambhar-kinage/venuro/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/vishwambhar-kinage/venuro/actions)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB.svg?style=flat&logo=react)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933.svg?style=flat&logo=nodedotjs)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.19-000000.svg?style=flat&logo=express)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas_Vector-47A248.svg?style=flat&logo=mongodb)](https://www.mongodb.com/)
+[![Redis](https://img.shields.io/badge/Redis-Distributed_Lock-DC382D.svg?style=flat&logo=redis)](https://redis.io/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?style=flat&logo=docker)](https://www.docker.com/)
 
-**Venuro** is an enterprise full-stack entertainment discovery and booking platform for movies, stadium concerts, cricket/sports tournaments, standup comedy, and immersive VR experiences. It features dedicated workflows for **Users**, **Event Coordinators**, and **Platform Administrators**, real-time Redis seat locking, double-booking prevention, digital QR tickets, automated refunds, and an intelligent **AI RAG (Retrieval-Augmented Generation)** discovery assistant.
-
----
-
-## 🌟 Key Features
-
-### 1. 👥 Multi-Role Workflows (1-Click Instant Demo Switcher)
-- **Guest / User**: Explore shows across 5 categories, chat with AI, select seats with real-time locks, pay with simulated payment methods, view digital QR tickets, and request cancellations with instant wallet refunds.
-- **Event Coordinator**: Create new events, schedule showtime slots, view sales & revenue metrics, and scan guest QR passes using the **Gate Admission Scanner**.
-- **Platform Admin**: Monitor Gross Merchandise Value (GMV), net revenue, seat occupancy rates, moderate events, assign user roles, and inspect Redis & vector AI system health.
-
-### 2. 💺 Real-Time Seat Selection & 5-Minute Redis Locking
-- **Interactive Multi-Tier Seat Map**: Visual matrix across **VIP (₹1500)**, **Premium (₹900)**, **Standard (₹500)**, and **Economy (₹250)**.
-- **Atomic Concurrency Control**: Uses atomic Redis locks (`SET NX EX 300`) with 5-minute countdown timers.
-- **Zero Double-Booking Guarantee**: Conflicting reservation attempts are instantly rejected.
-- **Live Sync**: Socket.io real-time broadcast (`seats_updated`) updates all connected clients looking at the same show.
-
-### 3. 💳 Simulated Checkout, Automated Refunds & Verifiable QR Tickets
-- **Simulated Payment Gateway**: Card, UPI / QR, Net Banking, and Venuro Wallet with promo coupon engine (`VENURO20`, `FIRSTSHOW`).
-- **Cryptographic QR Passes**: Every booking generates an HMAC-signed QR Code containing booking metadata.
-- **Dynamic Refund Policy**:
-  - `> 24 hours` before show: **100% full refund**
-  - `4 - 24 hours` before show: **70% refund**
-  - `< 4 hours` before show: Non-refundable
-  - Automated refund credits instantly deposited into user's **Venuro Wallet**.
-
-### 4. 🤖 AI-Powered RAG Assistant & Vector Search
-- **Natural Language Discovery**: Ask *"Find Coldplay concerts in Mumbai"*, *"Recommend comedy shows under ₹1000"*, or *"What movies are in English and Hindi?"*.
-- **Domain Grounded Q&A**: Knowledge-base retrieval for venue rules, prohibited items, wheelchair access, and refund policies.
-- **Inline Interactive Event Cards**: AI renders clickable booking cards directly in the chat stream with suggested follow-ups.
+**Venuro** is a full-stack entertainment discovery and booking platform built with the MERN stack. It features a 3-tier Role-Based Access Control (RBAC) architecture (**Customer**, **Organizer / Coordinator**, **Admin**), sub-second distributed seat locking powered by Redis (`SET NX EX 300`), real-time Socket.IO broadcasts, cryptographic QR tickets (HMAC-SHA256), and an AI discovery copilot powered by Google Gemini 1.5 Flash and vector cosine similarity search.
 
 ---
 
-## 🏗️ System Architecture
+## 🌟 Architecture & Core Features
+
+### 1. 👥 Multi-Role Architecture & Lifecycle Management
+- **Customer**: Browse categorized catalog (Movies, Concerts, Sports, Live Shows), interactive seat reservation, digital ticket wallet, and cancellation workflows with instant wallet refunds.
+- **Event Organizer**: Event creation lifecycle (`DRAFT` &rarr; `PENDING_APPROVAL` &rarr; `PUBLISHED`), show scheduling, ticket sales monitoring, and gate QR admission scanning.
+- **Admin**: Platform-wide GMV analytics, organizer approval queues, event moderation, and system telemetry.
+
+### 2. 💺 High-Concurrency Distributed Seat Locking
+- **Zero Double-Booking Guarantee**: Implements atomic **Redis `SET NX EX 300`** distributed locking to hold selected seats for exactly 5 minutes during checkout.
+- **Real-Time Synchronization**: **Socket.IO** room broadcasts immediately reflect seat locks across all connected clients.
+- **Automatic TTL Expiry**: Abandoned checkout sessions automatically release locked seats without manual intervention.
+
+### 3. 🤖 AI Discovery Assistant & Vector Search
+- **Conversational Copilot**: Integrated with **Google Gemini 1.5 Flash** for natural language event queries, venue recommendations, and budget filtering.
+- **Domain-Grounded RAG**: Vector cosine similarity search against structured platform policies (refund tiers, venue rules, seating categories).
+
+### 4. 💳 Cryptographic Passes & Automated Refund Engine
+- **Tamper-Proof QR Tickets**: Confirmed bookings generate a cryptographically signed HMAC-SHA256 QR pass for offline gate verification.
+- **Tiered Refund Workflow**: Automated calculation based on showtime proximity (>24h: 100%, 4–24h: 70%, <4h: non-refundable) credited directly to user wallets.
+
+---
+
+## 🏗️ System Design
 
 ```mermaid
-graph TD
-    Client["React 18 + Vite + Tailwind CSS"] <--> Socket["Socket.io Real-Time Bridge"]
-    Client --> API["Express.js REST Gateway"]
+flowchart TD
+    Client["React 18 + Vite + Tailwind CSS"] <-->|WebSockets| Socket["Socket.IO Server"]
+    Client -->|REST API| API["Express.js Gateway"]
     
     API --> Auth["JWT & RBAC Middleware"]
-    API --> RAG["RAG Engine (Vector Embeddings & Search)"]
-    API --> LockService["Redis Seat Lock Service (Atomic NX/EX)"]
-    API --> QRService["Cryptographic QR Generator & Validator"]
+    API --> RAG["Gemini AI & Semantic Vector Search"]
+    API --> LockService["Redis Seat Lock Service (SET NX EX 300)"]
+    API --> QRService["HMAC-SHA256 Cryptographic Pass Engine"]
     
-    LockService <--> Redis[(Redis 7 / In-Memory Cluster)]
-    RAG <--> VectorDB[(MongoDB Atlas Vector Search Index)]
-    API <--> MongoDB[(MongoDB Document Store)]
+    LockService <--> Redis[(Redis / In-Memory Fallback)]
+    API <--> MongoDB[(MongoDB Atlas & In-Memory Store)]
 ```
 
 ---
@@ -63,50 +55,50 @@ graph TD
 ## 🚀 Quick Start Guide
 
 ### Prerequisites
-- **Node.js**: v18+ (tested on Node v20/v24)
-- **npm**: v9+
+- **Node.js**: v18.0 or higher
+- **npm**: v9.0 or higher
 
-### Option A: Local Development (Fastest)
+### Option A: Local Development
 
-1. **Clone the repository**:
+1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/your-username/venuro.git
+   git clone https://github.com/vishwambhar-kinage/venuro.git
    cd venuro
    ```
 
-2. **Start Backend Server**:
+2. **Start Backend Server:**
    ```bash
    cd server
    npm install
    npm start
    ```
-   *The server automatically boots on `http://localhost:5000` with pre-seeded demo catalog, accounts, and in-memory Redis engine.*
+   *Runs on `http://localhost:5000` with automated database and Redis fallback engine.*
 
-3. **Start Frontend Client**:
+3. **Start Frontend Client:**
    ```bash
    cd ../client
    npm install
    npm run dev
    ```
-   *Access the application at `http://localhost:3000`.*
+   *Access the web application at `http://localhost:3000`.*
 
 ---
 
-### Option B: Docker & Docker Compose
+### Option B: Docker Compose
 
-Run the complete multi-container stack (Client, Server, Redis, MongoDB) with a single command:
+Run the entire multi-container stack (Client, Server, Redis, MongoDB) with a single command:
 ```bash
 docker-compose up --build
 ```
-- **Web Application**: `http://localhost:3000`
-- **Backend API**: `http://localhost:5000/api`
-- **Health Check**: `http://localhost:5000/api/health`
+- **Web Client**: `http://localhost:3000`
+- **REST API**: `http://localhost:5000/api`
+- **Health Endpoint**: `http://localhost:5000/api/health`
 
 ---
 
-## 🧪 Running Automated Test Suite
+## 🧪 Automated Testing
 
-Run the full end-to-end service test suite (Auth, Catalog, Redis Locking, QR Signatures, AI RAG):
+Run the end-to-end test suite (Auth, Catalog, Redis Locking, QR Signatures, and RAG):
 ```bash
 cd server
 npm test
@@ -114,67 +106,40 @@ npm test
 
 ---
 
-## 🔑 Seeded Demo Credentials
+## 🔐 Role Access Endpoints
 
-| Role | Email | Password | Key Privileges |
-|---|---|---|---|
-| 👤 **User** | `user@venuro.com` | `password123` | Discovery, 5-min seat locking, bookings, wallet, cancellations |
-| 🎪 **Coordinator** | `coordinator@venuro.com` | `password123` | Create events, schedule showtimes, live QR Gate Scanner |
-| 🛡️ **Admin** | `admin@venuro.com` | `password123` | Platform GMV metrics, user role governance, Redis health |
-
-*(You can also use the **1-Click Demo Buttons** on the Navbar or Sign In page for instant role switching without typing credentials!)*
+| Portal Role | Route | Access Description |
+| :--- | :--- | :--- |
+| **Customer** | `/auth` | Public catalog browsing, seat reservation, wallet & QR passes |
+| **Organizer** | `/organizer/login` | Event submission, showtime scheduling, gate admission scanner |
+| **Admin** | `/admin/login` | Platform analytics, approval workflows, user governance |
 
 ---
 
 ## 📡 REST API Reference
 
-### Authentication & Profiles
-| Method | Endpoint | Description | Role |
-|---|---|---|---|
-| `POST` | `/api/auth/register` | Register new user account | Public |
-| `POST` | `/api/auth/login` | Login with email and password | Public |
-| `POST` | `/api/auth/demo-login` | 1-Click login for User / Coordinator / Admin | Public |
-| `GET` | `/api/auth/me` | Retrieve authenticated user profile | Authenticated |
+### Authentication & RBAC
+- `POST /api/auth/register` — Register customer account
+- `POST /api/auth/login` — Authenticate and receive JWT token
+- `GET /api/auth/me` — Retrieve active user session profile
 
 ### Events & Shows
-| Method | Endpoint | Description | Role |
-|---|---|---|---|
-| `GET` | `/api/events` | List events with category, city & search filters | Public |
-| `GET` | `/api/events/:id` | Get event details, showtimes & reviews | Public |
-| `POST` | `/api/events` | Create a new entertainment event | Coordinator / Admin |
-| `GET` | `/api/shows/event/:eventId` | Get scheduled showtimes for an event | Public |
-| `GET` | `/api/shows/:showId/seat-map`| Get live seat grid + active Redis locks | Public / User |
-| `POST` | `/api/shows` | Add new showtime slot for an event | Coordinator / Admin |
+- `GET /api/events` — Query published events with category & city filters
+- `GET /api/events/:id` — Event details, cast, crew, and scheduled showtimes
+- `POST /api/events` — Create new event (Organizer/Admin)
+- `GET /api/shows/:showId/seat-map` — Real-time seat availability matrix
 
-### Bookings & Concurrency
-| Method | Endpoint | Description | Role |
-|---|---|---|---|
-| `POST` | `/api/bookings/lock-seats` | Acquire 5-minute atomic Redis lock for seats | User |
-| `POST` | `/api/bookings/release-seats` | Release temporary seat locks | User |
-| `POST` | `/api/bookings/checkout` | Process payment & generate cryptographic QR ticket | User |
-| `GET` | `/api/bookings/my-bookings` | Retrieve user's active/past bookings | User |
-| `POST` | `/api/bookings/:id/cancel` | Cancel booking & trigger automated refund | User |
-| `POST` | `/api/bookings/verify-qr` | Scan & verify gate admission QR code | Coordinator / Admin |
+### Concurrency & Bookings
+- `POST /api/shows/:showId/lock` — Acquire Redis lock for selected seats (`NX EX 300`)
+- `POST /api/shows/:showId/unlock` — Release held seat locks
+- `POST /api/payment/verify` — Verify HMAC payment signature and confirm booking
+- `POST /api/bookings/:id/cancel` — Trigger automated refund workflow
 
-### AI RAG Assistant & Recommendations
-| Method | Endpoint | Description | Role |
-|---|---|---|---|
-| `POST` | `/api/ai/chat` | Natural language event discovery & policy Q&A | Public / User |
-| `GET` | `/api/ai/recommendations` | Vector-similarity personalized recommendations | User |
-
-### Admin & Governance
-| Method | Endpoint | Description | Role |
-|---|---|---|---|
-| `GET` | `/api/admin/analytics` | Gross Merchandise Value, revenue & audit metrics | Admin |
-| `GET` | `/api/admin/users` | List all users and assigned roles | Admin |
-| `PUT` | `/api/admin/users/:id/role` | Promote/change user authorization role | Admin |
-| `GET` | `/api/admin/health` | Redis locks, memory telemetry & system uptime | Admin |
+### AI Discovery & Search
+- `POST /api/ai/chat` — Gemini 1.5 Flash conversational discovery copilot
+- `GET /api/ai/semantic-search` — Vector cosine similarity search query
 
 ---
 
-## ☁️ Cloud Deployment (AWS & CI/CD)
-See [aws-deployment.md](aws-deployment.md) for full instructions on configuring:
-- **AWS ECS Fargate** container services
-- **Amazon ElastiCache** Redis clusters
-- **MongoDB Atlas** Vector Search integration
-- **GitHub Actions** CI/CD pipeline (`.github/workflows/ci-cd.yml`)
+## 📄 License
+This project is licensed under the MIT License.
